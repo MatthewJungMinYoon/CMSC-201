@@ -1,0 +1,336 @@
+#File: proj1.py
+#Author: Matthew Yoon
+#Date: 10/16/2018
+#Section: 10
+#Email: matt45@umbc.edu
+#Description: This program is a text adventure where the user needs to escape
+# from the demogorgon by staying alive for 7 days or travel 150 miles to the
+# nearest big city.
+
+from random import randint, seed
+seed(100)
+
+#constants for player and monster health
+MAX_HEALTH = 100
+MIN_HEALTH = 0
+
+DEM_MAX_HEALTH = 300
+
+#constants for survival
+SURVIVE_DAYS = 7
+SURVIVE_DIST = 150
+
+#constant lists of food and items
+FOOD = ["Reese's Pieces", "Pop Rocks", "Ovaltine", "Wonder Bread", "Twinkies"]
+
+ITEMS = ["Sword", "Bicycle", "Hi-C", "Heelys", "Walkman", "Laser Cannon", "Rubber Band"]
+
+INVENTORY = ["Walkie Talkie", "Flashlight"]
+
+EQUIPPED_ITEM = []
+
+#constant list of choices
+CHOICES = ["View Inventory", "View Current Stats", "Eat an Eggo Waffle", "Nothing else"]
+
+EQUIP_CHOICES = ["Equip", "Unequip", "I change my mind"]
+
+LEAVE_OR_GO = ["Pack up camp and go", "Stay where you are"]
+
+EAT_OR_NOT = ["Eat it", "Put it back"]
+
+FIGHT = ["Fight", "Flail", "Flee"]
+
+#constant to ask for choice
+CHOICE = "Enter a choice: "
+
+DO_FIGHT = "What do you do now?"
+#constant to ask for actions
+MORNING = "What else would you like to do this morning?"
+
+#Displays the options you can choose depending on the argument
+def displayMenu(choices):
+    index = 0
+    print("Your options are:")
+    while(index < len(choices)):
+        print(index + 1, "-", choices[index])
+        index += 1
+
+def calcDamage(item):
+    newAttack = 0
+    if("Flashlight" in item):
+        newAttack = 5
+    if("Walkie Talkie" in item):
+        newAttack = 10
+    if("Rubber Band" in item):
+        newAttack = 25
+    if("Sword" in item):
+        newAttack = 50
+    if("Laser Cannon" in item):
+        newAttack = 100
+    return newAttack
+
+def eat(food, player_health):
+    #Eating Reese's Pieces
+    if(food == "Reese's Pieces"):
+        newHP = player_health - 30
+        print("You eat the Reese's Pieces. Turns out they are rotten. \nYour health decreases by 30 points.")
+    #Eating Pop Rocks
+    if(food == "Pop Rocks"):
+        newHP = player_health - 5
+        print("You eat the Pop Rocks. They pop in your mouth and burn you. \nYour health decreases by 5 points.")
+    #Eating Ovaltine
+    if(food == "Ovaltine"):
+        newHP = player_health + 15
+        print("You eat the Ovaltine. What the hell is Ovaltine. \nYour health increases by 15 points.")
+    #Eating Wonder Bread
+    if(food == "Wonder Bread"):
+        newHP = player_health + 25
+        print("You eat the Wonder Bread. A true wonder of modern science in loaf form. \nYour health increases by 25 points.")
+    #Eating Twinkies
+    if(food == "Twinkies"):
+        newHP = player_health + 30
+        print("You eat the Twinkies. Eat that soggy, cream-filled log you degenerate. \nYour health increases by 30 points.")
+    if(newHP > 100):
+        newHP = 100
+    return newHP
+
+
+def fight(player_health, item, inventory):
+    demoHealth = 300
+    demoAttack = 20
+    playerAttack = 0
+    itemAttack = calcDamage(item)
+    playerAttack = itemAttack
+    fightHP = player_health
+    print()
+    print("The Demo gorgon appears in front of you. \nIts face opens up like your mom before yell at you. It wants to eat you.")
+    if("Hi-C" in inventory):
+        demoHealth = 150
+    if("Walkman" in inventory):
+        demoAttack = 15
+    escape = False
+    flag = False
+    while(not flag):
+        flag = True
+        while(fightHP > 0 and demoHealth > 0 and escape != True):
+            print()
+            print("Your health: ", fightHP, "\nMonster health: ", demoHealth)
+            print()
+            print(DO_FIGHT)
+            displayMenu(FIGHT)
+            doWhat = int(input(CHOICE))
+            #If you choose to fight, print weapon you attack with and update health
+            if(doWhat == 1):
+                monsterHP = demoHealth - playerAttack
+                newHP = fightHP - demoAttack
+                demoHealth = monsterHP
+                fightHP = newHP
+                print()
+                print("You strike the Demogorgon with your ", item, "for ", playerAttack, "damage. \nThe Demogorgon slaps you back for ", demoAttack, "damage.")
+                flag = False
+            #If you flail
+            if(doWhat == 2):
+                fightHP = 0
+                print()
+                print("You flail like an idiot, as if that will do anything. \nThe demogorgon hits you on the head.")
+                flag = False
+            #If you try to escape
+            if(doWhat == 3):
+                run = randint(1,10)
+                #If you successfully escape
+                if(run <= 3):
+                    escape = True
+                    flag = False
+                #If you can't escape, monster hits you with half power
+                else:
+                    runHP = fightHP - (demoAttack / 2)
+                    fightHP = runHP
+                    print()
+                    print("You couldn't escape, no suprise there coward. The Demogorgon hits you with half its strength.")
+                    flag = False
+        if(fightHP == 0):
+            print()
+            print("The monster murdered you to death. RIP in peace.")
+        if(demoHealth == 0):
+            print()
+            print("You kill the monster, but you feel it won't be the last time you see it.")
+        if(escape == True):
+            print()
+            print("You try to run away from the fight like a coward. You are successful, and live to die another day.")
+    return fightHP
+
+def main():
+    print("After miles and miles of hiking in the woods, you finally setup your camp. You decided to go camping on the wrong weekend. \nYour phone buzzes: \n\tTHE DEMOGORGON HAS ESCAPED. \tRUN.")
+    day = 0
+    dist = 0
+    playerHealth = 100
+    while(day < SURVIVE_DAYS and dist < SURVIVE_DIST and playerHealth > MIN_HEALTH):
+        flag = False
+        day += 1
+        print()
+        print("The sun rises on Day ", day , " in the forest.")
+        print()
+        print("What would you like to do this morning?")
+        print()
+        while(not flag):
+            flag = True
+            print()
+            displayMenu(CHOICES)
+            yourChoice = int(input(CHOICE))
+            print()
+            #Look at inventory and equip or unequip what you want
+            if(yourChoice == 1):
+                print("Here is what your inventory looks like:")
+                print(INVENTORY)
+                print()
+                print("Do you want to equip an item?")
+                print()
+                displayMenu(EQUIP_CHOICES)
+                itemChoice = int(input(CHOICE))
+                print()
+                #Equip an item
+                if(itemChoice == 1):
+                    displayMenu(INVENTORY)
+                    equipItem = int(input(CHOICE))
+                    for i in range(len(INVENTORY)):
+                        if INVENTORY[i] in EQUIPPED_ITEM:
+                            EQUIPPED_ITEMS.remove(EQUIPPED_ITEM[0])
+                    EQUIPPED_ITEM.append(INVENTORY[equipItem - 1])
+                    print()
+                    print("You equipped ", INVENTORY[equipItem - 1])
+                    print()
+                    print(MORNING)
+                    flag = False
+                #Unequip an item
+                if(itemChoice == 2):
+                    displayMenu(EQUIPPED_ITEM)
+                    unequip = int(input(CHOICE))
+                    if(EQUIPPED_ITEM == []):
+                        print()
+                        print("There is nothing to unequip")
+                        print()
+                        print(MORNING)
+                        flag = False
+                    else:
+                        print()
+                        print("You unequipped ", EQUIPPED_ITEM[unequip - 1])
+                        EQUIPPED_ITEM.remove(EQUIPPED_ITEM[0])
+                        print()
+                        print(MORNING)
+                        flag = False
+                #Do nothing
+                if(itemChoice == 3):
+                    print()
+                    print(MORNING)
+                    flag = False
+            #Check your stats
+            if(yourChoice == 2):
+                print()
+                print("Health: ", playerHealth, "\nDistance traveled: ", dist, "\nEquipped item: ", EQUIPPED_ITEM, end = " ")
+                print()
+                print(MORNING)
+                flag = False
+            #Eat a waffle, adds 10 hp
+            if(yourChoice == 3):
+                waffleHealth = playerHealth + 10
+                playerHealth = waffleHealth
+                if(playerHealth > MAX_HEALTH):
+                    playerHealth = MAX_HEALTH
+                print()
+                print("You ate an Eggo Waffle. So bad, yet so good. \nYou heal for 10 points")
+                if(playerHealth == MAX_HEALTH):
+                    print("Your health is full.")
+                print()
+                print(MORNING)
+                flag = False
+            #Done doing morning decisions
+            if(yourChoice == 4):
+                print("The demogorgon looms in the distance. DO you leave or stay?")
+                print()
+                displayMenu(LEAVE_OR_GO)
+                stayOrGo = int(input(CHOICE))
+                #If you leave
+                if(stayOrGo == 1):
+                    print()
+                    print("you quickly pack up your camp. \nYou begin heading in the direction of the nearest town")
+                    print()
+                    travel = ((playerHealth / 4) + 5)
+                    num = randint(1,10)
+                    #Chance of finding backpack with food
+                    if(num <= 2):
+                        food = randint(0,4)
+                        print("You find a backpack with ", FOOD[food], "in it. \nDo you eat it or put it back?")
+                        displayMenu(EAT_OR_NOT)
+                        randomEat = int(input(CHOICE))
+                        #If you eat
+                        if(randomEat == 1):
+                            eatHealth = eat(FOOD[food], playerHealth)
+                            playerHealth = eatHealth
+                        #If you put it back
+                        else:
+                            print("You put the ", FOOD[food], "back")
+
+
+                    #Chance of finding a shed with items
+                    if(num > 2 and num < 5):
+                        item = randint(0,6)
+                        INVENTORY.append(ITEMS[item])
+                        print("You pass by an old shed and go inside. You find some thing on the shelf. \nIt's a ", ITEMS[item], "\nThe ", ITEMS[item], "has been added to your inventory.")
+                    #Chance of falling into a trench
+                    if(num > 4 and num < 7):
+                        print("You only make it half the distance you could have because you fall into a trench. Watch where you're going idiot. You must take 1 extra day to recover.")
+                        travel /= 2
+                        day += 1
+
+
+                    #Chance of fighting the Demogorgon
+                    if(num > 6 and num < 10):
+                       battleHealth =  fight(playerHealth, EQUIPPED_ITEM, INVENTORY)
+                       playerHealth = battleHealth
+
+                    #Chance of nothing happening
+                    if(num == 10):
+                        print("Nothing happened while you traveled.")
+
+
+                    #If you find a Bicycle
+                    if("Bicycle" in INVENTORY):
+                        travel *= 1.5
+                        print("The Bicycle has improved your distance traveled.")
+                    #If you find Heelys
+                    if("Heelys" in INVENTORY):
+                        travel *= 1.25
+                        print("The Heelys has improved your distance traveled.")
+
+
+                    #Add distance traveled to dist
+                    dist += travel
+                    print()
+                    print("You have now traveled ", dist)
+                    flag = True
+                #If you decide to stay at camp
+                if(stayOrGo == 2):
+                    print("You decide to stay in your camp for the night.")
+                    chance = randint(1,10)
+                    #Chance of fighting the Demogorgon
+                    if(chance <= 7):
+                       otherFight =  fight(playerHealth, EQUIPPED_ITEM, INVENTORY)
+                       playerHealth = otherFight
+                    #Chance of evading the Demogorgon, heal to full health
+                    else:
+                        playerHealth = MAX_HEALTH
+                        day += 1
+                        print("You successfully evade the Demogorgon and heal to max health.")
+                        flag = False
+    #If you survie for 7 days or get to the city
+    if(day == SURVIVE_DAYS or dist == SURVIVE_DIST):
+        print()
+        print("Congratulations! \nYou made it to civilization alive. \nIt took ", day, "days to go ", dist, "miles.")
+    #If you die to the monster
+    if(playerHealth == MIN_HEALTH):
+        print()
+        print("You couldn't survive and died.")
+    print()
+    print("Final Stats: \nHealth: ", playerHealth, "\nDistance traveled: ", dist, "\nEquipped item: ", EQUIPPED_ITEM)
+
+main()
